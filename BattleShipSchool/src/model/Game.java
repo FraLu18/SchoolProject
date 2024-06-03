@@ -1,6 +1,16 @@
 package model;
 
+import Ships.AircraftCarrier;
+import Ships.Battleship;
+import Ships.Cruiser;
+import Ships.Destroyer;
+import Ships.Ship;
+import Ships.Submarine;
 import java.awt.Graphics;
+import java.util.ArrayList;
+import players.BetterBot;
+import players.Bot;
+import players.Player;
 
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
@@ -13,12 +23,38 @@ import java.awt.Graphics;
  */
 public class Game {
     
-    private Board boardPlayer;
-    private Board boardBot;
-    private boolean turn; //true: Mensch am Zug, false: Computer am Zug
+    private OwnBoard ownBoard;
+    private OpponentBoard opponentBoard;
+    private Player player;
+    //private Bot bot;
+    private BetterBot bot;
+    
+    private boolean turn = true; //true: Mensch am Zug, false: Computer am Zug
+    private String shipType = "";
+    private String direction="h";
+    private int shipLength=0;
+    private int shipHeight=0;
+    private int numOfShips = 0;
+    private int numOfBotShips = 0;
+    private boolean isShipSelected = false;
+    
+    private ArrayList<Ship> playerShips = new ArrayList<>();
+    private ArrayList<Ship> botShips = new ArrayList<>();
     
     public Game(){
-        
+        ownBoard = new OwnBoard();
+        opponentBoard = new OpponentBoard();
+        player = new Player(ownBoard,opponentBoard);
+        bot = new BetterBot(ownBoard,opponentBoard);
+        setBotShipsList();
+    }
+    
+    public void setPlayerShipsList(){
+        playerShips = player.getShipList();
+    }
+    
+    public void setBotShipsList(){
+        botShips = bot.getShipList();
     }
     
     public void switchTurn(){
@@ -30,43 +66,143 @@ public class Game {
         }
     }
     
-    public boolean isPossibleToSetShip(int col, int row, String direction, int lengthOfShip, int heigthOfShip){
-        /*
-            Length and Height of all Ship in horizontal position: 
-        
-            1: AircraftCarrier, Length: 4, Height: 2
-            2: Battleship, Length: 4, Height: 1
-            3: Submarine, Length: 3, Height: 2
-            4: Cruiser, Length: 3, Height: 1
-            5: Destroyer, Length: 2, Height: 1
-        */
-        boolean isPossible = false;
-        boolean stop = false;
-        if(col >= 0 &&  row >= 0 && col+lengthOfShip < 10) {
-            for (int checkCol = 0; checkCol < lengthOfShip; checkCol++) {
-                for (int checkRow = 0; checkRow < heigthOfShip; checkRow++) {
-                    if(boardPlayer.getConditionOfField(col+checkCol, row+checkRow)==1){    
-                        if(stop == false){
-                            isPossible = true;
-                        }
-                    }
-                    else{
-                        isPossible = false;
-                        stop = true;
+    public void playerSetShip(int col, int row, int lengthOfShip, int heightOfHeight, String direction, String shipType){
+        player.setShip(col, row, lengthOfShip, heightOfHeight, direction, shipType);
+    }
+    
+    private void handleHit(int col, int row){
+        if(turn == true){
+            for (int i = 0; i < botShips.size(); i++) {
+                for (int j = 0; j < botShips.get(i).getFieldsOfShip().size(); j++) {
+                    if(botShips.get(i).getColOfFieldFromShip(j) == col && botShips.get(i).getRowOfFieldFromShip(j) == row){
+                        botShips.get(i).hitted();
+                        handleSunkShips(opponentBoard,botShips);
+                        //System.out.println("test");
+                        break;
                     }
                 }
             }
         }
-        return isPossible;
+        else{
+            for (int i = 0; i < playerShips.size(); i++) {
+                for (int j = 0; j < playerShips.get(i).getFieldsOfShip().size(); j++) {
+                    if(playerShips.get(i).getColOfFieldFromShip(j) == bot.getShootCol() && playerShips.get(i).getRowOfFieldFromShip(j) == bot.getShootRow()){
+                        playerShips.get(i).hitted();
+                        handleSunkShips(ownBoard,playerShips);
+                        System.out.println("hitHandeled");
+                        //System.out.println("testtt");
+                        break;
+                    }
+                }
+            }
+        }
     }
     
-    public void setShip(int col, int row, String direction, int lengthOfShip, int heigthOfShip){
-        if(isPossibleToSetShip(col,row,direction,lengthOfShip,heigthOfShip)==true){
-            boardPlayer.setShip(col, row);
+    public void playerShoot(int col, int row){
+        boolean isHit = false;
+        if(opponentBoard.getConditionOfField(col, row)==1){
+            handleHit(col, row);
+            isHit = true;
+        }
+        else if(opponentBoard.getConditionOfField(col, row)<2){
+            switchTurn();
+        }
+        player.shoot(col, row);
+    }
+    
+    public void botShoot(){
+        bot.chooseFieldToShoot();
+        System.out.println(bot.getShootCol() + " , " + bot.getShootRow());
+        //System.out.println("con: " + ownBoard.getConditionOfField(bot.getShootCol(), bot.getShootRow()));
+        if(ownBoard.getConditionOfField(bot.getShootCol(), bot.getShootRow())>=3){
+            handleHit(bot.getShootCol(), bot.getShootRow());
+            //System.out.println("again");
+            botShoot();
         }
         else{
-            System.out.println("WARNING: INVALID INPUT PLS SET YOUR SHIP ON ANOTHER PLACE !");
+            switchTurn();
+        } 
+    }
+    
+    public void handleSunkShips(Board board, ArrayList<Ship> listOfShips){
+        //System.out.println("bro");
+        for (int i = 0; i < listOfShips.size(); i++) {
+            if(listOfShips.get(i).isSunk()==true){
+                for (int fieldIndex = 0; fieldIndex < listOfShips.get(i).getFieldsOfShip().size(); fieldIndex++) {
+                    board.sunk(listOfShips.get(i).getColOfFieldFromShip(fieldIndex), listOfShips.get(i).getRowOfFieldFromShip(fieldIndex), listOfShips.get(i).getShipType());
+                    //System.out.println("brother");
+                }
+            }
         }
+    }
+    
+    public boolean getTurn(){
+        return turn;
+    }
+    
+    public void botTurn(){
+        turn = false;
+    }
+    
+    public void humanTurn(){
+        turn = true;
+    }
+    
+    public void setShipLength(int shipLength){
+        this.shipLength = shipLength;
+    }
+    
+    public int getShipLength(){
+        return shipLength;
+    }   
+    
+    public void setShipHeigth(int shipHeight){
+        this.shipHeight = shipHeight;
+    }
+    
+    public int getShipHeight(){
+        return shipHeight;
+    }
+    
+    public void setShipType(String pShipType){
+        shipType = pShipType;
+    }
+    
+    public String getShipType(){
+        return shipType;
+    }
+    
+    public void changeDirection(){
+        if(direction.equals("h")){
+            direction = "v";
+        }
+        else{
+            direction = "h";
+        }
+    }
+    
+    public void changeDirectionToHorizontal(){
+        direction = "h";
+    }
+    
+    public String getDirection(){
+        return direction;
+    }
+    
+    public int getNumOfPlacedShips(){
+        return player.getNumOfShips();
+    }
+    
+    public int getNumOfBotShips(){
+        return numOfBotShips;
+    }
+    
+    public void setSelected(boolean isShipSelected){
+        this.isShipSelected = isShipSelected;
+    }
+    
+    public boolean isShipSelected(){
+        return isShipSelected;
     }
     
     public void gameOver(){
@@ -75,6 +211,14 @@ public class Game {
     
     public void restart(){
         
+    }
+    
+    public void drawOpponentBoard(Graphics g, int squareSize){
+        opponentBoard.drawBoard(g, squareSize);
+    }
+    
+    public void drawOwnBoard(Graphics g, int squareSize){
+        ownBoard.drawBoard(g, squareSize);
     }
     
 }

@@ -1,5 +1,7 @@
 package Ships;
 
+import java.awt.Point;
+import java.util.ArrayList;
 import model.Board;
 
 /*
@@ -13,9 +15,10 @@ import model.Board;
  */
 public abstract class Ship {
     
-    protected Board board; // Objekt von Board
+    //protected Board board; // Objekt von Board
     protected int lifePoints; // Trefferpunkte des Schiffes
     protected boolean isSunk = false; // Sagt aus ob Schiff gesunken ist oder nicht.
+    protected ArrayList<Point> alFields = new ArrayList<>();
     protected int col;
     protected int row;
     protected int length = 0;
@@ -25,6 +28,18 @@ public abstract class Ship {
         this.col = col;
         this.row = row;
         this.direction = direction;
+    }
+    
+    public ArrayList<Point> getFieldsOfShip(){
+        return alFields;
+    }
+    
+    public int getColOfFieldFromShip(int index){
+        return alFields.get(index).x;
+    }
+    
+    public int getRowOfFieldFromShip(int index){
+        return alFields.get(index).y;
     }
     
     public void hitted(){
@@ -47,6 +62,8 @@ public abstract class Ship {
         return length;
     }
     
-    public abstract void setShip();
+    public abstract String getShipType();
+    
+    public abstract void setShip(Board board);
 
 }

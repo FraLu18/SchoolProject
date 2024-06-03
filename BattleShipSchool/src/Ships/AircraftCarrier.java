@@ -1,5 +1,6 @@
 package Ships;
 
+import java.awt.Point;
 import model.Board;
 
 /*
@@ -19,23 +20,35 @@ public class AircraftCarrier extends Ship{
         length = 4;
     }
     
+    @Override
+    public String getShipType(){
+        return "S1";
+    }
+    
     @Override 
-    public void setShip(){
+    public void setShip(Board board){
         if(direction.equals("h")){
             for (int i = 0; i < 4; i++) {
                 board.setShip(col+i, row);
+                Point position = new Point(col+i,row);
+                alFields.add(position);
             }
             for (int i = 0; i < 3; i++) {
                 board.setShip(col+i, row+1);
+                Point position = new Point(col+i,row+1);
+                alFields.add(position);
             }
         }
-        //simpler wäre es else zu benutzen, ich habe es aber so geschrieben damit man erkennt dass so das Schiff in vertikaler Form gemalt wird
-        if(direction.equals("v")){
+        else{
             for (int i = 0; i < 4; i++) {
                 board.setShip(col, row+i);
+                Point position = new Point(col,row+i);
+                alFields.add(position);
             }
             for (int i = 0; i < 3; i++) {
                 board.setShip(col+1, row+i);
+                Point position = new Point(col+1,row+i);
+                alFields.add(position);
             }
         }
     }

@@ -1,6 +1,11 @@
 package model;
 
 
+import Ships.AircraftCarrier;
+import Ships.Battleship;
+import Ships.Cruiser;
+import Ships.Destroyer;
+import Ships.Submarine;
 import java.awt.Color;
 import java.awt.Graphics;
 
@@ -13,16 +18,26 @@ import java.awt.Graphics;
  *
  * @author luc
  */
-public class Board {
+public abstract class Board {
     
-    private int [][] board = new int [10][10];
+    protected int [][] board = new int [10][10];
+    protected int numOfShips = 0;
     
     /*
         0: WASSER
         1: SCHIFF
         2: WASSER ABGESCHOSSEN
         3: SCHIFF ABGESCHOSSEN
+        4: AircraftCarrier versunken 
+        5: Battleship versunken
+        6: Submarine versunken
+        7: Cruiser versunken
+        8: Destroyer versunken
     */
+    
+    public Board(){
+        initBoard();
+    }
     
     public void initBoard(){
         //alle Felder sind WASSER
@@ -35,6 +50,7 @@ public class Board {
     
     public void setShip(int col, int row){
         //Teil des Feldes ist von SCHIFF
+        //System.out.println(col + " , " +  row);
         board[col][row] = 1;
     }
     
@@ -44,6 +60,7 @@ public class Board {
             1: SCHIFF
             2: WASSER ABGESCHOSSEN
             3: SCHIFF ABGESCHOSSEN
+            4: SCHIFF VERSUNKEN
         */
         return board[col][row];
     }
@@ -55,69 +72,88 @@ public class Board {
         if(condition < 2){
             if(condition == 0){
                 board[col][row] = 2;
+                System.out.println("No matches!");
             }
             else{
+                System.out.println("Hit!");
                 board[col][row] = 3;
             }
         }
+        else{
+            System.out.println("Already shooted!");
+        }
     }
+    
+    public void sunk(int col, int row, String shipType){
+        board[col][row] = 4;
+        if(shipType.equals("S1")){
+            board[col][row] = 4;
+        }
+        if(shipType.equals("S2")){
+            board[col][row] = 5;
+        }
+        if(shipType.equals("S3")){
+            board[col][row] = 6;
+        }
+        if(shipType.equals("S4")){
+            board[col][row] = 7;
+        }
+        if(shipType.equals("S5")){
+            board[col][row] = 8;
+        }
+    }
+    
+    public boolean isPossibleToSetShip(int col, int row, int lengthOfShip, int heightOfShip, String direction){
+        /*
+            Length and Height of all Ship in horizontal position: 
+        
+            1: AircraftCarrier, Length: 4, Height: 2
+            2: Battleship, Length: 4, Height: 1
+            3: Submarine, Length: 3, Height: 2
+            4: Cruiser, Length: 3, Height: 1
+            5: Destroyer, Length: 2, Height: 1
+        */
+        if(direction.equals("h")){
+            if(col >= 0 &&  row >= 0 && col+lengthOfShip-1 <= 9 && row+heightOfShip-1<= 9) {
+                for (int checkRow = 0; checkRow < heightOfShip; checkRow++) { 
+                    for (int checkCol = 0; checkCol < lengthOfShip; checkCol++) {
+                        if(getConditionOfField(col+checkCol, row+checkRow)==1){
+                            return false;
+                        }
+                    }
+                }
+            }
+            else{
+                return false;
+            }
+        }
+        else{
+            if(col >= 0 &&  row >= 0 && row+lengthOfShip-1 <= 9 && col+heightOfShip-1<= 9) {
+                for (int checkCol = 0; checkCol < heightOfShip; checkCol++) {
+                    for (int checkRow = 0; checkRow < lengthOfShip; checkRow++) { 
+                        if(getConditionOfField(col+checkCol, row+checkRow)==1){
+                            return false;
+                        }
+                    }
+                }
+            }
+            else{
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    
     
     public void resetBoard(){
         //entfernt alle Schiffe, alle Felder gelten wieder als unbeschossen.
         initBoard();
     }
     
-    public void draw(Graphics g, int squareSize, boolean player){
-        //Malt das Spielbrett, jedes Feld mit der passenden Farbe
-        if(player==true){
-            for(int col = 0; col < 10; col++) {
-                for(int row = 0; row < 10; row++) {
-                    if(board[col][row]<3){
-                        //wenn das Feld unbeschossen ist oder wenn doch, kein Schif darauf ist
-                        g.setColor(Color.blue);
-                    }
-                    else{
-                        //wenn das Feld beschossen wurde ist und ein Schif drauf ist
-                        g.setColor(Color.red);
-                    }
-                    g.fillRect(col*squareSize, row*squareSize, squareSize, squareSize);
-                    g.setColor(Color.gray);
-                    g.drawRect(col*squareSize, row*squareSize, squareSize, squareSize);
-                    if(board[col][row]==3){
-                        //malt ein Kreuz uf das Feld, wenn es beschossen wurde und darauf kein Schiff ist
-                        g.drawLine(col*squareSize, row*squareSize, squareSize, squareSize);
-                        g.drawLine(col*squareSize, (row*squareSize)+squareSize, squareSize, row*squareSize);
-                    }
-                }
-            }
-        }
-        else{
-            for(int col = 0; col < 10; col++) {
-                for(int row = 0; row < 10; row++) {
-                    if(board[col][row] == 1){
-                        //Wenn Player1 sein Schif da ist.
-                        Color darkGray = new Color(128,136,151);
-                        g.setColor(darkGray);
-                    }
-                    else if(board[col][row]<3){
-                        //wenn auf dem Feld kein Schiff ist, nur Wasser
-                        g.setColor(Color.blue);
-                    }
-                    else{
-                        //Wenn es nicht beschossen wurde oder wenn auf dem beschossenen Feld kein Schiff ist
-                        g.setColor(Color.red);
-                    }
-                    g.fillRect(col*squareSize, row*squareSize, squareSize, squareSize);
-                    g.setColor(Color.gray);
-                    g.drawRect(col*squareSize, row*squareSize, squareSize, squareSize);
-                    if(board[col][row]==3){
-                        g.drawLine(col*squareSize, row*squareSize, squareSize, squareSize);
-                        g.drawLine(col*squareSize, (row*squareSize)+squareSize, squareSize, row*squareSize);
-                    }
-                }
-            }
-        }
-    }
+    
+    public abstract void drawBoard(Graphics g, int squareSize);
+    
 
 }
 
