@@ -58,6 +58,10 @@ public abstract class Board {
         board[col][row] = SHIP;
     }
     
+    public void setWater(int col, int row){
+        board[col][row] = WATER;
+    }
+    
     public int getConditionOfField(int col, int row){
         /* Gibt Zustand des Feldes zurück:
             0: WASSER

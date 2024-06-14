@@ -23,6 +23,7 @@ public class MainFrame extends javax.swing.JFrame {
     private Game game;
     private Timer timer;
     private boolean enabled = true;
+    private boolean isNewShip = true;
     
     public MainFrame() {
         initComponents();
@@ -80,6 +81,11 @@ public class MainFrame extends javax.swing.JFrame {
         jPanel1.setBackground(new java.awt.Color(112, 128, 144));
 
         ownBoardPanel.setPreferredSize(new java.awt.Dimension(400, 400));
+        ownBoardPanel.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+            public void mouseMoved(java.awt.event.MouseEvent evt) {
+                ownBoardPanelMouseMoved(evt);
+            }
+        });
         ownBoardPanel.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mousePressed(java.awt.event.MouseEvent evt) {
                 ownBoardPanelMousePressed(evt);
@@ -234,17 +240,22 @@ public class MainFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_opponentBoardPanelMousePressed
 
     private void ownBoardPanelMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ownBoardPanelMousePressed
+        
+        int x = evt.getX();
+        int y = evt.getY();
 
+        int col = x / (opponentBoardPanel.getWidth() / 10);
+        int row = y / (opponentBoardPanel.getHeight() / 10);
+            
         if(evt.getButton() == MouseEvent.BUTTON1){
-            int x = evt.getX();
-            int y = evt.getY();
-
-            int col = x / (opponentBoardPanel.getWidth() / 10);
-            int row = y / (opponentBoardPanel.getHeight() / 10);
-
             if(game.isShipSelected()==true){
                 game.playerSetShip(col, row);
                 //player.setShip(col, row, game.getShipLength(), game.getShipHeight(), game.getShipType());
+                if(game.isShipPlacedSuccessfully(col, row)==true){
+                    game.setSelected(false);
+                    game.setSuccessfullyPlaced(false);
+                    isNewShip = true;
+                }
                 update();
             }
         }
@@ -256,49 +267,51 @@ public class MainFrame extends javax.swing.JFrame {
            } 
         }
         
-        if(game.getNumOfPlacedShips()==0){
-            aircraftCarrierButton.setEnabled(true);
-            battleshipButton.setEnabled(false);
-            submarineButton.setEnabled(false);
-            cruiserButton.setEnabled(false);
-            destroyerButton.setEnabled(false);
-        }
-        else if(game.getNumOfPlacedShips()==1){
-            battleshipButton.setEnabled(true);
-            aircraftCarrierButton.setEnabled(false);
-            submarineButton.setEnabled(false);
-            cruiserButton.setEnabled(false);
-            destroyerButton.setEnabled(false);
-        }
-        else if(game.getNumOfPlacedShips()==2){
-            submarineButton.setEnabled(true);
-            aircraftCarrierButton.setEnabled(false);
-            battleshipButton.setEnabled(false);
-            cruiserButton.setEnabled(false);
-            destroyerButton.setEnabled(false);
-        }
-        else if(game.getNumOfPlacedShips()==3){
-            cruiserButton.setEnabled(true);
-            aircraftCarrierButton.setEnabled(false);
-            battleshipButton.setEnabled(false);
-            submarineButton.setEnabled(false);
-            destroyerButton.setEnabled(false);
-        }
-        else if(game.getNumOfPlacedShips()==4){
-            destroyerButton.setEnabled(true);
-            aircraftCarrierButton.setEnabled(false);
-            battleshipButton.setEnabled(false);
-            submarineButton.setEnabled(false);
-            cruiserButton.setEnabled(false);
-        }
-        else{
-            aircraftCarrierButton.setEnabled(false);
-            battleshipButton.setEnabled(false);
-            submarineButton.setEnabled(false);
-            cruiserButton.setEnabled(false);
-            destroyerButton.setEnabled(false);
-            System.out.println(game.getNumOfPlacedShips());
-            game.setPlayerShipsList();
+        if(game.isShipPlacedSuccessfully(col, row)==true){
+            if(game.getNumOfPlacedShips()==0){
+                aircraftCarrierButton.setEnabled(true);
+                battleshipButton.setEnabled(false);
+                submarineButton.setEnabled(false);
+                cruiserButton.setEnabled(false);
+                destroyerButton.setEnabled(false);
+            }
+            else if(game.getNumOfPlacedShips()==1){
+                battleshipButton.setEnabled(true);
+                aircraftCarrierButton.setEnabled(false);
+                submarineButton.setEnabled(false);
+                cruiserButton.setEnabled(false);
+                destroyerButton.setEnabled(false);
+            }
+            else if(game.getNumOfPlacedShips()==2){
+                submarineButton.setEnabled(true);
+                aircraftCarrierButton.setEnabled(false);
+                battleshipButton.setEnabled(false);
+                cruiserButton.setEnabled(false);
+                destroyerButton.setEnabled(false);
+            }
+            else if(game.getNumOfPlacedShips()==3){
+                cruiserButton.setEnabled(true);
+                aircraftCarrierButton.setEnabled(false);
+                battleshipButton.setEnabled(false);
+                submarineButton.setEnabled(false);
+                destroyerButton.setEnabled(false);
+            }
+            else if(game.getNumOfPlacedShips()==4){
+                destroyerButton.setEnabled(true);
+                aircraftCarrierButton.setEnabled(false);
+                battleshipButton.setEnabled(false);
+                submarineButton.setEnabled(false);
+                cruiserButton.setEnabled(false);
+            }
+            else{
+                aircraftCarrierButton.setEnabled(false);
+                battleshipButton.setEnabled(false);
+                submarineButton.setEnabled(false);
+                cruiserButton.setEnabled(false);
+                destroyerButton.setEnabled(false);
+                System.out.println(game.getNumOfPlacedShips());
+                game.setPlayerShipsList();
+            }
         }
     }//GEN-LAST:event_ownBoardPanelMousePressed
 
@@ -341,6 +354,25 @@ public class MainFrame extends javax.swing.JFrame {
         game.changeToStartDirection();
         game.setSelected(true);
     }//GEN-LAST:event_destroyerButtonActionPerformed
+
+    private void ownBoardPanelMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ownBoardPanelMouseMoved
+        int x = evt.getX();
+        int y = evt.getY();
+
+        int col = x / (opponentBoardPanel.getWidth() / 10);
+        int row = y / (opponentBoardPanel.getHeight() / 10);
+        
+        if(game.isShipSelected()){
+            if(isNewShip==false){
+                game.removeShip();
+            }
+            if(game.isShipPlacedSuccessfully(col, row)){
+                isNewShip = false;
+            }
+            game.playerSetShip(col, row);
+            repaint();
+        }    
+    }//GEN-LAST:event_ownBoardPanelMouseMoved
 
     /**
      * @param args the command line arguments

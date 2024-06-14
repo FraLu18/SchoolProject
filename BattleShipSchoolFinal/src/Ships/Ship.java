@@ -62,6 +62,16 @@ public abstract class Ship {
         return length;
     }
     
+    public void unsetShip(Board board){
+        int unsetCol = 0;
+        int unsetRow = 0;
+        for (int i = 0; i < alFields.size(); i++) {
+            unsetCol = (int)(alFields.get(i).getX());
+            unsetRow = (int)(alFields.get(i).getY());
+            board.setWater(unsetCol, unsetRow);
+        }
+    }
+    
     public abstract String getShipType();
     
     public abstract void setShip(Board board);

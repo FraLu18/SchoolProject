@@ -25,6 +25,8 @@ public class Player {
     private OwnBoard ownBoard;
     private OpponentBoard opponentBoard;
     
+    private boolean succesfullyPlaced = false;
+    
     private ArrayList<Ship> alShips = new ArrayList<>();
     
     
@@ -45,6 +47,16 @@ public class Player {
         return alShips;
     }
     
+    public void removeShip(){
+        if(!alShips.isEmpty()) {
+            int lastIndex = alShips.size()-1;
+            //setzt alle Felder des Schiffes zu Wasser
+            alShips.get(lastIndex).unsetShip(ownBoard);
+            //entfernt das Schiff von der List der lebenden Schiffe
+            alShips.remove(lastIndex);
+        }
+    }
+    
     private boolean isThisShipAlreadyPlaced(String character){
         boolean result = false;
         for (int i = 0; i < alShips.size(); i++) {
@@ -54,6 +66,14 @@ public class Player {
             }
         }
         return result;
+    }
+    
+    public boolean isSuccesfullyPlaced(){
+        return succesfullyPlaced;
+    }
+    
+    public void setSuccesfullyPlaced(boolean pSuccesfullyPlaced){
+        succesfullyPlaced = pSuccesfullyPlaced;
     }
     
     public void setShip(int col, int row, int lengthOfShip, int heightOfShip, String direction, String chipCharacter){
@@ -93,6 +113,7 @@ public class Player {
                     alShips.add(destroyer);
                 }
             }
+            succesfullyPlaced = true;
         }
     }
 }

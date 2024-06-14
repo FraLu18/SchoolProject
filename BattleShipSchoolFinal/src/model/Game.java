@@ -70,6 +70,18 @@ public class Game {
         player.setShip(col, row, shipLength, shipHeight, direction, shipType);
     }
     
+    public void removeShip(){
+        player.removeShip();
+    }
+    
+    public boolean isShipPlacedSuccessfully(int col, int row){
+        return player.isSuccesfullyPlaced();
+    }
+    
+    public void setSuccessfullyPlaced(boolean result){
+        player.setSuccesfullyPlaced(result);
+    }
+    
     private void handleHit(int col, int row){
         if(turn == true){
             for (int i = 0; i < botShips.size(); i++) {
